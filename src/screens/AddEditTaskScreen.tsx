@@ -9,10 +9,11 @@ import { useNavigation, useRoute, RouteProp } from '@react-navigation/native';
 import { RootStackParamList } from '../types/navigation';
 import { Priority } from '../types';
 import { Flag, X } from 'lucide-react-native';
-import { isToday, isTomorrow } from 'date-fns';
-
-// Nota: Para o selecionador de data, usaremos botões simples para "Hoje", "Amanhã" para o MVP.
-// Estamos evitando dependências nativas adicionais como @react-native-community/datetimepicker para garantir uma configuração fácil.
+import { isToday, isTomorrow, format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
+import DateTimePicker, { DateTimePickerEvent } from '@react-native-community/datetimepicker';
+import { Switch } from 'react-native';
+import { scheduleTaskReminder, cancelTaskReminder } from '../services/notifications';
 
 type AddEditTaskRouteProp = RouteProp<RootStackParamList, 'AddEditTask'>;
 
@@ -28,11 +29,33 @@ export const AddEditTaskScreen = () => {
     const [description, setDescription] = useState(existingTask?.description || '');
     const [priority, setPriority] = useState<Priority>(existingTask?.priority || 'medium');
     const [selectedListId, setSelectedListId] = useState(existingTask?.listId || listId || lists[0]?.id || '');
-    // Gerenciamento simples de data
+    // Gerenciamento de data e lembretes
     const [dueDate, setDueDate] = useState<string | undefined>(existingTask?.dueDate || date);
+    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [reminderEnabled, setReminderEnabled] = useState(existingTask?.reminderEnabled || false);
 
-    const handleSave = () => {
+    const onChangeDate = (event: DateTimePickerEvent, selectedDate?: Date) => {
+        setShowDatePicker(Platform.OS === 'ios');
+        if (selectedDate) {
+            setDueDate(selectedDate.toISOString());
+        }
+    };
+
+    const handleSave = async () => {
         if (!title.trim()) return;
+
+        let notificationId = existingTask?.notificationId;
+
+        if (reminderEnabled && dueDate) {
+            if (existingTask && existingTask.notificationId) {
+                await cancelTaskReminder(existingTask.notificationId);
+            }
+            const newNotifId = await scheduleTaskReminder(existingTask?.id || 'new', title, dueDate);
+            if (newNotifId) notificationId = newNotifId;
+        } else if (!reminderEnabled && existingTask?.notificationId) {
+            await cancelTaskReminder(existingTask.notificationId);
+            notificationId = undefined;
+        }
 
         const taskData = {
             title,
@@ -40,6 +63,8 @@ export const AddEditTaskScreen = () => {
             priority,
             listId: selectedListId,
             dueDate: dueDate,
+            reminderEnabled,
+            notificationId,
         };
 
         if (existingTask) {
@@ -163,14 +188,53 @@ export const AddEditTaskScreen = () => {
                         <TouchableOpacity
                             style={[
                                 styles.chip,
-                                !dueDate && { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }
+                                !dueDate && { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary }
                             ]}
                             onPress={() => setDueDate(undefined)}
                         >
-                            <Text style={styles.chipText}>Sem Data</Text>
+                            <Text style={[styles.chipText, !dueDate && { color: '#fff' }]}>Sem Data</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            style={[
+                                styles.chip,
+                                dueDate && !isToday(new Date(dueDate)) && !isTomorrow(new Date(dueDate)) && { backgroundColor: theme.colors.primary, borderColor: theme.colors.primary }
+                            ]}
+                            onPress={() => setShowDatePicker(true)}
+                        >
+                            <Text style={[styles.chipText, dueDate && !isToday(new Date(dueDate)) && !isTomorrow(new Date(dueDate)) && { color: '#fff' }]}>
+                                {dueDate && !isToday(new Date(dueDate)) && !isTomorrow(new Date(dueDate))
+                                    ? format(new Date(dueDate), "dd/MM", { locale: ptBR })
+                                    : "Outra Data"}
+                            </Text>
                         </TouchableOpacity>
                     </View>
+                    {showDatePicker && (
+                        <DateTimePicker
+                            value={dueDate ? new Date(dueDate) : new Date()}
+                            mode="date"
+                            display="default"
+                            onChange={onChangeDate}
+                            textColor={theme.colors.text}
+                        />
+                    )}
                 </View>
+
+                {dueDate && (
+                    <View style={[styles.section, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: theme.spacing.xl }]}>
+                        <View>
+                            <Text style={styles.label}>Lembrar-me</Text>
+                            <Text style={{ color: theme.colors.textTertiary, fontSize: theme.typography.small.fontSize, marginTop: -4 }}>
+                                Receber notificação no dia do vencimento
+                            </Text>
+                        </View>
+                        <Switch
+                            value={reminderEnabled}
+                            onValueChange={setReminderEnabled}
+                            trackColor={{ false: theme.colors.border, true: theme.colors.primary }}
+                            thumbColor={'#fff'}
+                        />
+                    </View>
+                )}
             </ScrollView>
 
             <View style={styles.footer}>
@@ -218,6 +282,7 @@ const styles = StyleSheet.create({
     row: {
         flexDirection: 'row',
         gap: theme.spacing.m,
+        flexWrap: 'wrap',
     },
     priorityBadge: {
         flexDirection: 'row',

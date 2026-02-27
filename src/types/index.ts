@@ -7,6 +7,8 @@ export interface Task {
   isCompleted: boolean;
   priority: Priority;
   dueDate?: string; // ISO string
+  reminderEnabled?: boolean;
+  notificationId?: string;
   listId: string;
   createdAt: string;
   updatedAt: string;
@@ -23,7 +25,8 @@ export interface List {
 
 export interface Note {
   id: string;
-  content: string; // A primeira linha pode ser considerada o título.
+  title?: string;
+  content: string;
   color?: string;
   createdAt: string;
   updatedAt: string;
@@ -47,7 +50,7 @@ export interface AppState {
   deleteList: (id: string) => void;
 
   // Note Ações de observação
-  addNote: (content: string, color?: string) => void;
-  updateNote: (id: string, content: string, color?: string) => void;
+  addNote: (content: string, title?: string, color?: string) => void;
+  updateNote: (id: string, content: string, title?: string, color?: string) => void;
   deleteNote: (id: string) => void;
 }

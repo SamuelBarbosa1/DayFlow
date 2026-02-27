@@ -4,6 +4,7 @@ import { persist, createJSONStorage } from 'zustand/middleware';
 import { AppState, Task, List, Note } from '../types';
 import { storage } from '../database/storage';
 import { v4 as uuidv4 } from 'uuid';
+import { cancelTaskReminder } from '../services/notifications';
 
 export const useStore = create<AppState>()(
     persist(
@@ -35,9 +36,15 @@ export const useStore = create<AppState>()(
                 ),
             })),
 
-            deleteTask: (id) => set((state) => ({
-                tasks: state.tasks.filter((task) => task.id !== id),
-            })),
+            deleteTask: (id) => set((state) => {
+                const taskToDelete = state.tasks.find(t => t.id === id);
+                if (taskToDelete?.notificationId) {
+                    cancelTaskReminder(taskToDelete.notificationId);
+                }
+                return {
+                    tasks: state.tasks.filter((task) => task.id !== id),
+                };
+            }),
 
             toggleTaskCompletion: (id) => set((state) => ({
                 tasks: state.tasks.map((task) =>
@@ -77,11 +84,12 @@ export const useStore = create<AppState>()(
             })),
 
             // Ações de Notas
-            addNote: (content, color) => set((state) => ({
+            addNote: (content, title, color) => set((state) => ({
                 notes: [
                     ...state.notes,
                     {
                         id: uuidv4(),
+                        title,
                         content,
                         color,
                         createdAt: new Date().toISOString(),
@@ -90,9 +98,9 @@ export const useStore = create<AppState>()(
                 ],
             })),
 
-            updateNote: (id, content, color) => set((state) => ({
+            updateNote: (id, content, title, color) => set((state) => ({
                 notes: state.notes.map((note) =>
-                    note.id === id ? { ...note, content, color, updatedAt: new Date().toISOString() } : note
+                    note.id === id ? { ...note, content, title, color, updatedAt: new Date().toISOString() } : note
                 ),
             })),
 

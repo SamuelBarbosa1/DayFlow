@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { theme } from '../theme';
 import { RootStackParamList, MainTabParamList } from '../types/navigation';
-import { House, Calendar, CalendarDays, List, StickyNote, Plus } from 'lucide-react-native';
+import { House, Calendar, CalendarDays, List, StickyNote, Plus, ListTodo } from 'lucide-react-native';
 
 // Telas
 import { HomeScreen } from '../screens/HomeScreen';
@@ -52,11 +52,11 @@ const MainTabs = () => {
                 }}
             />
             <Tab.Screen
-                name="Tomorrow"
+                name="Tasks"
                 component={TasksScreen}
                 options={{
-                    tabBarIcon: ({ color, size }) => <CalendarDays color={color} size={size} />,
-                    tabBarLabel: 'Amanhã'
+                    tabBarIcon: ({ color, size }) => <ListTodo color={color} size={size} />,
+                    tabBarLabel: 'Todas'
                 }}
             />
             <Tab.Screen

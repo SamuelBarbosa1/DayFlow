@@ -14,37 +14,60 @@ interface NoteItemProps {
 export const NoteItem: React.FC<NoteItemProps> = ({ note, onPress, onDelete }) => {
     return (
         <TouchableOpacity
-            style={[styles.container, { backgroundColor: note.color || theme.colors.surface }]}
+            style={styles.container}
             onPress={() => onPress(note.id)}
             activeOpacity={0.7}
         >
-            <Text style={styles.content} numberOfLines={4}>
-                {note.content}
-            </Text>
-            <Text style={styles.date}>
-                {format(new Date(note.updatedAt), "d 'de' MMM", { locale: ptBR })}
-            </Text>
+            <View style={[styles.cover, { backgroundColor: note.color || theme.colors.surfaceHighlight }]}>
+                <Text style={styles.content} numberOfLines={4}>
+                    {note.content}
+                </Text>
+            </View>
+            <View style={styles.footer}>
+                <Text style={styles.title} numberOfLines={1}>
+                    {note.title || 'Sem título'}
+                </Text>
+                <Text style={styles.date}>
+                    {format(new Date(note.updatedAt), "d 'de' MMM. 'de' yyyy", { locale: ptBR })}
+                </Text>
+            </View>
         </TouchableOpacity>
     );
 };
 
 const styles = StyleSheet.create({
     container: {
+        marginBottom: theme.spacing.m,
+        borderRadius: theme.borderRadius.l,
+        overflow: 'hidden', // Ensures the colored cover respects border radius
+        backgroundColor: theme.colors.background, // Match screen background for the footer area
+    },
+    cover: {
+        height: 120, // Fixed height for consistency
         padding: theme.spacing.m,
-        borderRadius: theme.borderRadius.m,
-        marginBottom: theme.spacing.s,
-        borderWidth: 1,
-        borderColor: theme.colors.border,
-        minHeight: 100,
+        borderTopLeftRadius: theme.borderRadius.l,
+        borderTopRightRadius: theme.borderRadius.l,
     },
     content: {
+        fontSize: theme.typography.small.fontSize,
+        color: 'rgba(255,255,255,0.8)',
+        lineHeight: 18,
+    },
+    footer: {
+        paddingVertical: theme.spacing.s,
+        paddingHorizontal: theme.spacing.xs,
+        alignItems: 'center',
+    },
+    title: {
         fontSize: theme.typography.body.fontSize,
         color: theme.colors.text,
-        marginBottom: theme.spacing.s,
+        fontWeight: 'bold',
+        marginBottom: 2,
+        textAlign: 'center',
     },
     date: {
         fontSize: theme.typography.small.fontSize,
         color: theme.colors.textTertiary,
-        alignSelf: 'flex-end',
+        textAlign: 'center',
     },
 });

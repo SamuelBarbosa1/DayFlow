@@ -16,25 +16,36 @@ export const TasksScreen = () => {
     const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
     const { tasks, toggleTaskCompletion, deleteTask } = useStore();
 
-    const title = route.name === 'Today' ? 'Hoje' : route.name === 'Tomorrow' ? 'Amanhã' : 'Tarefas';
+    const title = route.name === 'Today' ? 'Hoje' : route.name === 'Tasks' ? 'Todas as Tarefas' : 'Tarefas';
 
     const filteredTasks = useMemo(() => {
         return tasks.filter(task => {
-            if (!task.dueDate) return false;
+            if (route.name === 'Tasks') return true; // Show all
+            if (!task.dueDate) return false; // Other routes need dates
+
             const date = new Date(task.dueDate);
             if (route.name === 'Today') {
                 return isToday(date) || (isPast(date) && !task.isCompleted); // Include overdue in Today
             }
-            if (route.name === 'Tomorrow') return isTomorrow(date);
             return true;
         }).sort((a, b) => {
             if (a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1;
+
+            // Sort by due date if both exist
+            if (a.dueDate && b.dueDate) {
+                return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
+            }
+
+            // Put undated tasks last
+            if (!a.dueDate && b.dueDate) return 1;
+            if (a.dueDate && !b.dueDate) return -1;
+
             return 0;
         });
     }, [tasks, route.name]);
 
     const handleAddTask = () => {
-        const date = route.name === 'Tomorrow' ? new Date(new Date().setDate(new Date().getDate() + 1)).toISOString() : new Date().toISOString();
+        const date = route.name === 'Tasks' ? undefined : new Date().toISOString();
         navigation.navigate('AddEditTask', { date });
     };
 

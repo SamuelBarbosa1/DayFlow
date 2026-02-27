@@ -29,16 +29,17 @@ export const AddEditNoteScreen = () => {
 
     const existingNote = notes.find(n => n.id === noteId);
 
+    const [title, setTitle] = useState(existingNote?.title || '');
     const [content, setContent] = useState(existingNote?.content || '');
     const [color, setColor] = useState(existingNote?.color);
 
     const handleSave = () => {
-        if (!content.trim()) return;
+        if (!content.trim() && !title.trim()) return;
 
         if (existingNote) {
-            updateNote(existingNote.id, content, color);
+            updateNote(existingNote.id, content, title, color);
         } else {
-            addNote(content, color);
+            addNote(content, title, color);
         }
         navigation.goBack();
     };
@@ -51,21 +52,34 @@ export const AddEditNoteScreen = () => {
     };
 
     return (
-        <ScreenLayout style={{ backgroundColor: color || theme.colors.background }}>
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <X size={24} color={theme.colors.text} />
-                </TouchableOpacity>
-                <View style={{ flexDirection: 'row', gap: theme.spacing.m }}>
-                    {existingNote && (
-                        <TouchableOpacity onPress={handleDelete}>
-                            <Text style={{ color: theme.colors.danger }}>Excluir</Text>
-                        </TouchableOpacity>
-                    )}
-                    <TouchableOpacity onPress={handleSave}>
-                        <Text style={{ color: theme.colors.primary, fontWeight: '600' }}>Concluir</Text>
+        <ScreenLayout>
+            <View style={[
+                styles.headerWrapper,
+                color ? { backgroundColor: color } : {}
+            ]}>
+                <View style={styles.headerControls}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <X size={24} color={theme.colors.text} />
                     </TouchableOpacity>
+                    <View style={{ flexDirection: 'row', gap: theme.spacing.m }}>
+                        {existingNote && (
+                            <TouchableOpacity onPress={handleDelete}>
+                                <Text style={{ color: theme.colors.text }}>Excluir</Text>
+                            </TouchableOpacity>
+                        )}
+                        <TouchableOpacity onPress={handleSave}>
+                            <Text style={{ color: theme.colors.text, fontWeight: '600' }}>Concluir</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
+
+                <TextInput
+                    placeholder="Título (opcional)"
+                    placeholderTextColor="rgba(255,255,255,0.6)"
+                    value={title}
+                    onChangeText={setTitle}
+                    style={styles.titleInput}
+                />
             </View>
 
             <ScrollView style={{ flex: 1 }}>
@@ -100,12 +114,26 @@ export const AddEditNoteScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    header: {
+    headerWrapper: {
+        paddingVertical: theme.spacing.m,
+        paddingHorizontal: theme.spacing.l,
+        marginHorizontal: -theme.spacing.l, // Negate ScreenLayout padding
+        marginTop: -theme.spacing.l, // Negate ScreenLayout padding
+        marginBottom: theme.spacing.m,
+        borderBottomWidth: 1,
+        borderBottomColor: theme.colors.border,
+    },
+    headerControls: {
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
         marginBottom: theme.spacing.m,
-        paddingVertical: theme.spacing.s, // Add some vertical padding
+    },
+    titleInput: {
+        fontSize: theme.typography.h2.fontSize,
+        fontWeight: 'bold',
+        color: theme.colors.text,
+        marginBottom: theme.spacing.xs,
     },
     input: {
         fontSize: theme.typography.body.fontSize,

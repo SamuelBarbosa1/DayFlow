@@ -3,7 +3,7 @@ import { NavigatorScreenParams } from '@react-navigation/native';
 export type MainTabParamList = {
     Home: undefined;
     Today: undefined;
-    Tomorrow: undefined;
+    Tasks: undefined;
     Lists: undefined;
     Notes: undefined;
 };
