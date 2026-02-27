@@ -39,11 +39,11 @@ const styles = StyleSheet.create({
     container: {
         marginBottom: theme.spacing.m,
         borderRadius: theme.borderRadius.l,
-        overflow: 'hidden', // Ensures the colored cover respects border radius
-        backgroundColor: theme.colors.background, // Match screen background for the footer area
+        overflow: 'hidden', // Garante que a capa colorida respeite o raio da borda
+        backgroundColor: theme.colors.background, // Cor de fundo da área do rodapé
     },
     cover: {
-        height: 120, // Fixed height for consistency
+        height: 120, // Altura fixa para consistência
         padding: theme.spacing.m,
         borderTopLeftRadius: theme.borderRadius.l,
         borderTopRightRadius: theme.borderRadius.l,

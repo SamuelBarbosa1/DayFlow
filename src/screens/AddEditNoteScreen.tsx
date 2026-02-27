@@ -117,8 +117,8 @@ const styles = StyleSheet.create({
     headerWrapper: {
         paddingVertical: theme.spacing.m,
         paddingHorizontal: theme.spacing.l,
-        marginHorizontal: -theme.spacing.l, // Negate ScreenLayout padding
-        marginTop: -theme.spacing.l, // Negate ScreenLayout padding
+        marginHorizontal: -theme.spacing.l, // Negar preenchimento do ScreenLayout
+        marginTop: -theme.spacing.l, // Negar preenchimento do ScreenLayout
         marginBottom: theme.spacing.m,
         borderBottomWidth: 1,
         borderBottomColor: theme.colors.border,

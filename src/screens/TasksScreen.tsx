@@ -20,23 +20,23 @@ export const TasksScreen = () => {
 
     const filteredTasks = useMemo(() => {
         return tasks.filter(task => {
-            if (route.name === 'Tasks') return true; // Show all
-            if (!task.dueDate) return false; // Other routes need dates
+            if (route.name === 'Tasks') return true; // Mostrar tudo
+            if (!task.dueDate) return false; // Outras rotas precisam de datas
 
             const date = new Date(task.dueDate);
             if (route.name === 'Today') {
-                return isToday(date) || (isPast(date) && !task.isCompleted); // Include overdue in Today
+                return isToday(date) || (isPast(date) && !task.isCompleted); // Incluir atrasadas em Hoje
             }
             return true;
         }).sort((a, b) => {
             if (a.isCompleted !== b.isCompleted) return a.isCompleted ? 1 : -1;
 
-            // Sort by due date if both exist
+            // Ordenar por data de vencimento se ambos existirem
             if (a.dueDate && b.dueDate) {
                 return new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime();
             }
 
-            // Put undated tasks last
+            // Colocar tarefas sem data por último
             if (!a.dueDate && b.dueDate) return 1;
             if (a.dueDate && !b.dueDate) return -1;
 
